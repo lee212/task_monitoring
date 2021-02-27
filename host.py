@@ -1,20 +1,21 @@
-import os
-import psutil
-import getpass
+import process, system
+import time
 
 class Host(object):
 
     def __init__(self):
-        sysname, nodename, release, version, machine = os.uname()
-        self.hostname = nodename
-        self.username = getpass.getuser()
+        self.process = process.Process()
+        self.system = system.System()
 
-def func_call(items):
-    res = {}
-    for item in items:
-        name, args = item
-        func = getattr(psutil, name)
-        res[name] = func(**args)
-
-    return res
-
+    def status(self, interval=5, times=5):
+        for i in range(times):
+            self.process.processes()
+            self.system.cpus()
+            self.system.memory()
+            self.process.save_all()
+            self.system.save_all()
+            time.sleep(interval)
+          
+if __name__ == "__main__":
+    obj = Host()
+    obj.status()

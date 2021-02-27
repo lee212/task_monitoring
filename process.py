@@ -1,17 +1,29 @@
-from host import Host, func_call
+from base import Base, func_call
+import time
 
-class Process(Host):
+class Process(Base):
 
     def __init__(self):
         super().__init__()
+        self.processes_stats = []
 
     def processes(self):
         
         process_iter = func_call([('process_iter',
-            {'attrs':['pid','username']})])['process_iter']
-        procs = {p.pid: p.info for p in process_iter if p.info['username'] ==
+            {'attrs':[
+                'pid',
+                'username', 
+                'cpu_times',
+                'memory_info',
+                'open_files', # owner only
+                'connections',# owner only
+                'num_threads'
+                ]})])
+        process_iter_val = process_iter['process_iter']['value']
+        res = {p.pid: p.info | {'time_measured': time.time()} for p in process_iter_val if p.info['username'] ==
                 self.username}
-        print(procs)
+        self.processes_stats.append(res)
+        return res
 
     # 'name', 'num_ctx_switches', 'exe', 'cwd', 'memory_full_info',
     # 'memory_info', 'pid', 'create_time', 'nice', 'cpu_times', 'memory_maps',
@@ -22,4 +34,5 @@ class Process(Host):
 
 if __name__ == "__main__":
     obj = Process()
-    obj.processes()
+    procs = obj.processes()
+    print(procs)

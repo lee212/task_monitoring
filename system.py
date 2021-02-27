@@ -1,9 +1,13 @@
-from host import Host, func_call
+from base import Base, func_call
 
-class System(Host):
+class System(Base):
 
     def __init__(self):
         super().__init__()
+        self.cpus_stats = []
+        self.memory_stats = []
+        self.disks_stats = []
+        self.network_stats = []
 
     def cpus(self):
 
@@ -14,7 +18,9 @@ class System(Host):
                 ('cpu_stats', {}),
                 ('getloadavg', {})]
 
-        self.cpus = func_call(items)
+        res = func_call(items)
+        self.cpus_stats.append(res)
+        return res
 
     def memory(self):
 
@@ -22,7 +28,9 @@ class System(Host):
                 ('virtual_memory', {}),
                 ('swap_memory', {})]
         
-        self.memory = func_call(items)
+        res = func_call(items)
+        self.memory_stats.append(res)
+        return res
 
     def disks(self):
 
@@ -31,7 +39,9 @@ class System(Host):
                 ('disk_usage', '/'),
                 ('disk_io_counters', {'perdisk':False})]
 
-        self.disks = func_call(items)
+        res = func_call(items)
+        self.disks_stats.append(res)
+        return res
 
     def network(self):
 
@@ -41,14 +51,15 @@ class System(Host):
                 ('net_if_addrs', {}),
                 ('net_if_stats', {})]
 
-        self.network = func_call(items)
-
+        res = func_call(items)
+        self.network_stats.append(res)
+        return res
 
 if __name__ == "__main__":
-    obj = Host()
-    obj.cpus()
-    print(obj.cpus)
-    obj.memory()
-    print(obj.memory)
-    obj.network()
-    print(obj.network)
+    obj = System()
+    cpus = obj.cpus()
+    print(cpus)
+    mem = obj.memory()
+    print(mem)
+    #obj.network()
+    #print(obj.network)
