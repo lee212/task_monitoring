@@ -1,24 +1,20 @@
+import os
 import psutil
+import getpass
 
 class Host(object):
-    def cpus(self):
 
-        items = [ 
-                ('cpu_times', {}),
-                ('cpu_percent', {'interval':1}),
-                ('cpu_times_percent', {'interval':1}),
-                ('cpu_stats', {}),
-                ('getloadavg', {})]
+    def __init__(self):
+        sysname, nodename, release, version, machine = os.uname()
+        self.hostname = nodename
+        self.username = getpass.getuser()
 
-        res = {}
-        for item in items:
-            name, args = item
-            func = getattr(psutil, name)
-            res[name] = func(**args)
+def func_call(items):
+    res = {}
+    for item in items:
+        name, args = item
+        func = getattr(psutil, name)
+        res[name] = func(**args)
 
-        self.cpus = res
+    return res
 
-
-obj = Host()
-obj.cpus()
-print(obj.cpus)
