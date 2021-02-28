@@ -4,23 +4,23 @@ class System(Base):
 
     def __init__(self):
         super().__init__()
-        self.cpus_stats = []
-        self.memory_stats = []
-        self.disks_stats = []
-        self.network_stats = []
+        self.cpus_cache = None
+        self.memory_cache = None
+        self.disks_cache = None
+        self.network_cache = None
 
     def cpus(self):
 
+        # divide "default" vs "custom" (from yaml file)
         items = [ 
                 ('cpu_times', {}),
-                ('cpu_percent', {'interval':1}),
+                ('cpu_percent', {'interval':1, 'percpu':True}),
                 ('cpu_times_percent', {'interval':1}),
                 ('cpu_stats', {}),
                 ('getloadavg', {})]
 
-        res = func_call(items)
-        self.cpus_stats.append(res)
-        return res
+        self.cpus_cache = func_call(items)
+        return self.cpus_cache
 
     def memory(self):
 
@@ -28,9 +28,8 @@ class System(Base):
                 ('virtual_memory', {}),
                 ('swap_memory', {})]
         
-        res = func_call(items)
-        self.memory_stats.append(res)
-        return res
+        self.memory_cache = func_call(items)
+        return self.memory_cache
 
     def disks(self):
 
@@ -39,9 +38,8 @@ class System(Base):
                 ('disk_usage', '/'),
                 ('disk_io_counters', {'perdisk':False})]
 
-        res = func_call(items)
-        self.disks_stats.append(res)
-        return res
+        self.disks_cache = func_call(items)
+        return self.disks_cache
 
     def network(self):
 
@@ -51,9 +49,8 @@ class System(Base):
                 ('net_if_addrs', {}),
                 ('net_if_stats', {})]
 
-        res = func_call(items)
-        self.network_stats.append(res)
-        return res
+        self.network_cache = func_call(items)
+        return self.network_cache
 
 if __name__ == "__main__":
     obj = System()

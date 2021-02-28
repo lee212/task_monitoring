@@ -10,6 +10,7 @@ class Base(object):
         sysname, nodename, release, version, machine = os.uname()
         self.hostname = nodename
         self.username = getpass.getuser()
+        self.name = type(self).__name__
 
     def save_all(self, opath=None):
         opath = "{}{}_{}_{}".format(opath or "",
@@ -17,19 +18,20 @@ class Base(object):
         save(opath, self.__dict__)
 
 
-def func_call(items):
-    res = {}
-    for item in items:
-        name, args = item
-        func = getattr(psutil, name)
-        res[name] = { 
-                'value': func(**args),
+def psutil_func_call(ftuple):
+    res_dict = {}
+    for fname, fargs in ftuple:
+        func = getattr(psutil, fname)
+        res_dict[fname] = { 
+                'value': func(**fargs),
                 'time_measured': time.time()}
+    return res_dict
 
-    return res
-
-def save(fname, data):
+def save(fname, dict_data):
     fname = "{}_{}.json".format(fname, time.time())
     with open(fname, 'w') as f:
-        json.dump(data, f, indent=4)
+        json.dump(dict_data, f, indent=4)
     
+def gen_time_seq(unix_time, freq=10):
+    return unix_time - divmod(unix_time / freq, 1)[1] * freq
+

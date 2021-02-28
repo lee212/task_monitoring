@@ -5,25 +5,28 @@ class Process(Base):
 
     def __init__(self):
         super().__init__()
-        self.processes_stats = []
+        self.cached = None
 
     def processes(self):
         
         process_iter = func_call([('process_iter',
             {'attrs':[
                 'pid',
+                'name',
+                'exe',
+                'cmdline',
                 'username', 
                 'cpu_times',
+                'cpu_percent',
                 'memory_info',
                 'open_files', # owner only
-                'connections',# owner only
+                #'connections',# owner only
                 'num_threads'
                 ]})])
         process_iter_val = process_iter['process_iter']['value']
-        res = {p.pid: p.info | {'time_measured': time.time()} for p in process_iter_val if p.info['username'] ==
+        self.cached = {p.pid: {**p.info, **{'time_measured': time.time()}} for p in process_iter_val if p.info['username'] ==
                 self.username}
-        self.processes_stats.append(res)
-        return res
+        return self.cached
 
     # 'name', 'num_ctx_switches', 'exe', 'cwd', 'memory_full_info',
     # 'memory_info', 'pid', 'create_time', 'nice', 'cpu_times', 'memory_maps',
