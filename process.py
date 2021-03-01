@@ -21,6 +21,7 @@ class Process(Base):
                 'memory_info',
                 'open_files', # owner only
                 #'connections',# owner only
+                'environ',
                 'num_threads'
                 ]})])
         process_iter_val = process_iter['process_iter']['value']
