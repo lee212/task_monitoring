@@ -1,4 +1,4 @@
-from base import Base, func_call
+from base import Base, psutil_func_call
 import time
 
 class Process(Base):
@@ -9,7 +9,7 @@ class Process(Base):
 
     def processes(self):
         
-        process_iter = func_call([('process_iter',
+        process_iter = psutil_func_call([('process_iter',
             {'attrs':[
                 'pid',
                 'name',

@@ -1,4 +1,4 @@
-from base import Base, func_call
+from base import Base, psutil_func_call
 
 class System(Base):
 
@@ -19,7 +19,7 @@ class System(Base):
                 ('cpu_stats', {}),
                 ('getloadavg', {})]
 
-        self.cpus_cache = func_call(items)
+        self.cpus_cache = psutil_func_call(items)
         return self.cpus_cache
 
     def memory(self):
@@ -28,7 +28,7 @@ class System(Base):
                 ('virtual_memory', {}),
                 ('swap_memory', {})]
         
-        self.memory_cache = func_call(items)
+        self.memory_cache = psutil_func_call(items)
         return self.memory_cache
 
     def disks(self):
@@ -38,7 +38,7 @@ class System(Base):
                 ('disk_usage', '/'),
                 ('disk_io_counters', {'perdisk':False})]
 
-        self.disks_cache = func_call(items)
+        self.disks_cache = psutil_func_call(items)
         return self.disks_cache
 
     def network(self):
@@ -49,7 +49,7 @@ class System(Base):
                 ('net_if_addrs', {}),
                 ('net_if_stats', {})]
 
-        self.network_cache = func_call(items)
+        self.network_cache = psutil_func_call(items)
         return self.network_cache
 
 if __name__ == "__main__":

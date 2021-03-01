@@ -23,7 +23,7 @@ class Host(object):
     def get_argparse(self):
         parser = argparse.ArgumentParser(description="Host monitoring")
         parser.add_argument("--interval", default=5)
-        parser.add_argument("--times", default=5)
+        parser.add_argument("--times", type=int, default=5)
         parser.add_argument("--output_path")
         args = parser.parse_args()
         self.args = args
