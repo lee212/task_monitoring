@@ -8,9 +8,9 @@ DEBUG=True
 
 class Aggregator(object):
     def __init__(self, ipath="./"):
-        entities = self.load(ipath)
+        entities = self.load_json(ipath)
 
-    def load(self, path):
+    def load_json(self, path):
         jsons = {}
         for fname in glob.glob(path + "*json"):
             with open(fname) as f:
@@ -19,6 +19,22 @@ class Aggregator(object):
                 jsons[os.path.basename(fname)] = data
         self.loaded_jsons = jsons
         return jsons
+
+    def merge_systems_cpu_by(self, gname):
+        proc_infos_by_group = {}
+        for fname, saved_data in self.loaded_jsons.items():
+            if fname[0:6] != "system":
+                continue
+            proc_infos = saved_data['cpus_cache']
+            for pid, proc_info in proc_infos.items():
+                if saved_data['hostname'] in proc_infos_by_group:
+                   proc_infos_by_group[saved_data['hostname']].append(proc_info)
+                else:
+                   proc_infos_by_group[saved_data['hostname']] = [proc_info]
+        return proc_infos_by_group
+
+    def merge_systems_cpu_by_getloadavg(self):
+        return self.merge_systems_cpu_by('getloadavg')
 
     def merge_process_by_name(self):
         return self.merge_process_by('name')
