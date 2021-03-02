@@ -3,6 +3,7 @@ import glob, os
 import numpy as np
 import pandas as pd
 from base import gen_time_seq
+from collections import OrderedDict
 
 DEBUG=True
 
@@ -20,21 +21,54 @@ class Aggregator(object):
         self.loaded_jsons = jsons
         return jsons
 
-    def merge_systems_cpu_by(self, gname):
-        proc_infos_by_group = {}
+    def collect_systems_cpu_by(self, column):
+        sys_infos_by_group = {}
         for fname, saved_data in self.loaded_jsons.items():
             if fname[0:6] != "system":
                 continue
-            proc_infos = saved_data['cpus_cache']
-            for pid, proc_info in proc_infos.items():
-                if saved_data['hostname'] in proc_infos_by_group:
-                   proc_infos_by_group[saved_data['hostname']].append(proc_info)
-                else:
-                   proc_infos_by_group[saved_data['hostname']] = [proc_info]
-        return proc_infos_by_group
+            sys_info = saved_data['cpus_cache'][column]
+            if saved_data['hostname'] in sys_infos_by_group:
+               sys_infos_by_group[saved_data['hostname']].append(sys_info)
+            else:
+               sys_infos_by_group[saved_data['hostname']] = [sys_info]
+        return sys_infos_by_group
 
-    def merge_systems_cpu_by_getloadavg(self):
-        return self.merge_systems_cpu_by('getloadavg')
+    # user=0.1, nice=0.0, system=0.1, idle=99.8, iowait=0.0, irq=0.0, softirq=0.0, steal=0.0, guest=0.0, guest_nice=0.0
+    def collect_systems_cpy_by_cpu_times_percent(self):
+        return self.collect_systems_cpu_by('cpu_times_percent')
+
+    def collect_systems_cpu_by_getloadavg(self):
+        return self.collect_systems_cpu_by('getloadavg')
+
+    def cpu_times_percent_to_dataframe(self, sys_infos_by_group):
+        dict_data = {}
+        for hostname, sys_infos in sys_infos_by_group.items():
+            tmp = OrderedDict({ "user": {}, "nice": {}, "system": {}, "idle": {}, "iowait": {}, "irq": {}, "softirq": {}, "steal": {}, "guest": {}, "guest_nice": {}})
+            for sys_info in sys_infos:
+                time_seq = gen_time_seq(sys_info['time_measured'])
+                for idx, column in enumerate(tmp.keys()):
+                    if time_seq in tmp[column]:
+                        tmp[column][time_seq].append(sys_info['value'][idx])
+                    else:
+                        tmp[column][time_seq] = [sys_info['value'][idx]]
+            for column in tmp.keys():
+                dict_data[column] = {pd.to_datetime(k, unit='s', origin='unix') : np.mean(v) for k, v in tmp[column].items()}
+        df = pd.DataFrame.from_dict(dict_data)
+        return df
+
+    def getloadavg_to_dataframe(self, sys_infos_by_group):
+        dict_data = {}
+        for hostname, sys_infos in sys_infos_by_group.items():
+            tmp = {}
+            for sys_info in sys_infos:
+               time_seq = gen_time_seq(sys_info['time_measured'])
+               if time_seq in tmp:
+                   tmp[time_seq].append(sys_info['value'][0])
+               else:
+                   tmp[time_seq] = [sys_info['value'][0]]
+            dict_data[hostname] = {pd.to_datetime(k, unit='s', origin='unix') : np.mean(v) for k, v in tmp.items()}
+        df = pd.DataFrame.from_dict(dict_data)
+        return df
 
     def merge_process_by_name(self):
         return self.merge_process_by('name')
