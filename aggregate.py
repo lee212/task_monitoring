@@ -27,13 +27,13 @@ class Aggregator(object):
         jsons_fnames = jsons.keys()
         path = self.input_path
         for fname in glob.glob(path + "*json"):
-            if os.path.basename(fname) in jsons_fname and not force_to_reload:
+            if os.path.basename(fname) in jsons_fnames and not force_to_reload:
                 continue
             with open(fname) as f:
                 if DEBUG: print(f"{fname} loaded.")
                 data = json.load(f)
                 jsons[os.path.basename(fname)] = data
-        self.loaded_jsons |= jsons 
+        #self.loaded_jsons = {**self.loaded_jsons , **jsons} 
         return jsons
 
     def collect_systems_cpu_by(self, column):
@@ -58,6 +58,7 @@ class Aggregator(object):
     def cpu_times_percent_to_dataframe(self, sys_infos_by_group):
         dict_data = {}
         for hostname, sys_infos in sys_infos_by_group.items():
+            # NEED TO MANAGE hostnames
             tmp = OrderedDict({ "user": {}, "nice": {}, "system": {}, "idle": {}, "iowait": {}, "irq": {}, "softirq": {}, "steal": {}, "guest": {}, "guest_nice": {}})
             for sys_info in sys_infos:
                 time_seq = gen_time_seq(sys_info['time_measured'])
@@ -68,6 +69,7 @@ class Aggregator(object):
                         tmp[column][time_seq] = [sys_info['value'][idx]]
             for column in tmp.keys():
                 dict_data[column] = {pd.to_datetime(k, unit='s', origin='unix') : np.mean(v) for k, v in tmp[column].items()}
+ 
         df = pd.DataFrame.from_dict(dict_data)
         return df
 
