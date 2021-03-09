@@ -10,6 +10,7 @@ DEBUG=True
 class Aggregator(object):
     def __init__(self, ipath="./"):
         entities = self.load_json(ipath)
+        self.input_path = ipath
 
     def load_json(self, path):
         jsons = {}
@@ -19,6 +20,20 @@ class Aggregator(object):
                 data = json.load(f)
                 jsons[os.path.basename(fname)] = data
         self.loaded_jsons = jsons
+        return jsons
+
+    def refresh(self, force_to_reload=False):
+        jsons = self.loaded_jsons
+        jsons_fnames = jsons.keys()
+        path = self.input_path
+        for fname in glob.glob(path + "*json"):
+            if os.path.basename(fname) in jsons_fname and not force_to_reload:
+                continue
+            with open(fname) as f:
+                if DEBUG: print(f"{fname} loaded.")
+                data = json.load(f)
+                jsons[os.path.basename(fname)] = data
+        self.loaded_jsons |= jsons 
         return jsons
 
     def collect_systems_cpu_by(self, column):
