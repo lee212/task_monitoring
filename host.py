@@ -16,6 +16,7 @@ class Host(object):
             self.process.processes()
             self.system.cpus()
             self.system.memory()
+            self.system.gpus()
             self.process.save_all(self.args.output_path)
             self.system.save_all(self.args.output_path)
             time.sleep(interval)

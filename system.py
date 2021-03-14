@@ -1,6 +1,9 @@
 from base import Base, psutil_func_call
+from gpu import GPU
 
 class System(Base):
+        
+    __gpu = GPU()
 
     def __init__(self):
         super().__init__()
@@ -8,6 +11,18 @@ class System(Base):
         self.memory_cache = None
         self.disks_cache = None
         self.network_cache = None
+        self.gpus_cache = None
+
+    def gpus(self):
+        self.__gpu.get_handles()
+        self.__gpu.device_query()
+        self.__gpu.get_running_processes()
+        self.__gpu.get_accounting_stats()
+        self.gpus_cache = {
+                'proc_infos': self.__gpu.proc_infos,
+                'proc_stats': self.__gpu.proc_stats,
+                'device_info': self.__gpu.device_info}
+        return self.gpus_cache
 
     def cpus(self):
 

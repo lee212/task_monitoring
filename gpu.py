@@ -25,6 +25,7 @@ class GPU(Base):
 
     def device_query(self):
         device_info = self.nvsmi.DeviceQuery('memory.free, memory.total, timestamp, count, name, index, compute_mode, utilization.gpu, utilization.memory')
+        device_info['time_measured'] = time.time()
         self.device_info = device_info
         return device_info
 
@@ -50,9 +51,12 @@ class GPU(Base):
                 proc_stats[pid] = { 
                         'gpuUtilization': stats.gpuUtilization,
                         'memoryUtilization': stats.memoryUtilization,
+                        'maxMemoryUsage': stats.maxMemoryUsage,
                         'time': stats.time,
-                        'status': stats.isRunning,
-                        'deviceIndex': idx
+                        'startTime': stats.startTime,
+                        'status': bool(stats.isRunning),
+                        'deviceIndex': idx,
+                        'time_measured': time.time()
                         }
         self.proc_stats = proc_stats
         return proc_stats
