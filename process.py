@@ -23,7 +23,9 @@ class Process(Base):
                 'open_files', # owner only
                 #'connections',# owner only
                 'environ',
-                'num_threads'
+                'num_threads',
+                'cpu_affinity',
+                'cpu_num'
                 ]})])
         process_iter_val = process_iter['process_iter']['value']
         self.cached = {p.pid: {**p.info, **{'time_measured': time.time()}} for p in process_iter_val if p.info['username'] ==
