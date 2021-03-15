@@ -100,7 +100,7 @@ class Aggregator(object):
             for device_idx in range(sys_info['count']):
                 dev_info = sys_info[column2][device_idx]
                 data = [
-                        time_seq,
+                        pd.to_datetime(time_seq, unit='s', origin='unix'),
                         hostname,
                         device_idx,
                         dev_info['product_name'],
