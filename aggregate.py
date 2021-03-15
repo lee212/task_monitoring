@@ -87,6 +87,35 @@ class Aggregator(object):
         df = pd.DataFrame.from_dict(dict_data)
         return df
 
+    def gpu_device_info(self):
+        dlist = []
+        column1 = 'device_info'
+        column2 = 'gpu'
+        for fname, saved_data in self.loaded_jsons.items():
+            if fname[0:6] != "system":
+                continue
+            sys_info = saved_data['gpus_cache'][column1]
+            time_seq = gen_time_seq(sys_info['time_measured'])
+            hostname = saved_data['hostname']
+            for device_idx in range(sys_info['count']):
+                dev_info = sys_info[column2][device_idx]
+                data = [
+                        time_seq,
+                        hostname,
+                        device_idx,
+                        dev_info['product_name'],
+                        # frame buffer memory in bytes (from MiB)
+                        dev_info['fb_memory_usage']['total'] * (1024**2),
+                        dev_info['fb_memory_usage']['free'] * (1024**2),
+                        dev_info['utilization']['gpu_util'],
+                        dev_info['utilization']['memory_util'],
+                        ]
+                dlist.append(data)
+        return pd.DataFrame(dlist,
+        columns=['date', 'hostname', 'device_index', 'product_name',
+        'fb_memory_usage_total', 'fb_memory_usage_free', 'gpu_util',
+        'memory_util'])
+
     def merge_process_by_name(self):
         return self.merge_process_by('name')
 
@@ -154,9 +183,4 @@ class Aggregator(object):
             dict_data[gname] = {pd.to_datetime(k, unit='s', origin='unix') : np.mean(v) for k, v in tmp.items()}
         df = pd.DataFrame.from_dict(dict_data)
         return df
-
-
-
-
-
 

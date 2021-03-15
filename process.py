@@ -12,6 +12,7 @@ class Process(Base):
         process_iter = psutil_func_call([('process_iter',
             {'attrs':[
                 'pid',
+                'create_time',
                 'name',
                 'exe',
                 'cmdline',
