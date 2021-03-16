@@ -5,16 +5,24 @@ import pandas as pd
 from base import gen_time_seq
 from collections import OrderedDict
 
-DEBUG=True
+DEBUG=False
 
 class Aggregator(object):
-    def __init__(self, ipath="./"):
-        entities = self.load_json(ipath)
-        self.input_path = ipath
+    def __init__(self, input_path=None):
+        entities = self.load_json(input_path)
+        self.input_path = input_path
 
-    def load_json(self, path):
+    def load_json(self, path, load_type="all"):
         jsons = {}
-        for fname in glob.glob(path + "*json"):
+        if path is None:
+            return jsons
+
+        if load_type == "all":
+            find = "/*json"
+        else:
+            find = f"/{load_type}"
+
+        for fname in glob.glob(path + find):
             with open(fname) as f:
                 if DEBUG: print(f"{fname} loaded.")
                 data = json.load(f)
@@ -144,17 +152,27 @@ class Aggregator(object):
                 environ = proc_info['environ']
                 if not environ:
                     continue
-                if not 'RP_TASK_NAME' in environ:
+                if not 'RP_TASK_NAME' in environ and not 'RP_UNIT_NAME' in environ:
                     continue
-                rp_task_name = environ['RP_TASK_NAME']
+                rp_task_name = environ.get('RP_TASK_NAME',
+                        environ.get('RP_UNIT_NAME'))
 
                 task_id, task_name, stage_id, stage_name, pipe_id, pipe_name = rp_task_name.split(",")
-                gname = task_name[0:11]
+                gname = task_name#[0:11]
                 if gname in proc_infos_by_group:
                    proc_infos_by_group[gname].append(proc_info)
                 else:
                    proc_infos_by_group[gname] = [proc_info]
         return proc_infos_by_group
+
+    def sum_core_count_by_task(self, proc_info_by_group):
+        dict_data = {}
+        for gname, proc_infos in proc_info_by_group.items():
+            cnt = 0
+            for proc_info in proc_infos:
+                cnt += len(proc_info['cpu_affinity'])
+            dict_data[gname] = cnt
+        return dict_data
 
     def mean_cpu_percent_by_time(self, proc_infos_by_group):
         dict_data = {}
