@@ -1,4 +1,5 @@
 import json
+import time
 import glob, os
 import numpy as np
 import pandas as pd
@@ -165,13 +166,20 @@ class Aggregator(object):
                    proc_infos_by_group[gname] = [proc_info]
         return proc_infos_by_group
 
+    # TODO: place to a separate file
     def sum_core_count_by_task(self, proc_info_by_group):
         dict_data = {}
         for gname, proc_infos in proc_info_by_group.items():
             cnt = 0
+            create_time = time.time()
+            measured_time = 0
             for proc_info in proc_infos:
                 cnt += len(proc_info['cpu_affinity'])
-            dict_data[gname] = cnt
+                create_time = min(create_time, proc_info['create_time'])
+                measured_time = max(measured_time, proc_info['time_measured'])
+            dict_data[gname] = {
+                    'value': cnt,
+                    'elapsed_time': (measured_time - create_time) // 1}
         return dict_data
 
     def mean_cpu_percent_by_time(self, proc_infos_by_group):

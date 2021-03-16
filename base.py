@@ -11,11 +11,13 @@ class Base(object):
         self.hostname = nodename
         self.username = getpass.getuser()
         self.name = type(self).__name__
+        self.snapshot_idx = 0
 
     def save_all(self, opath=None):
-        opath = "{}{}_{}_{}".format(opath or "",
-                type(self).__name__.lower(), self.hostname, self.username)
+        opath = "{}{}_{}_{}_{}".format(opath or "",
+                type(self).__name__.lower(), self.snapshot_idx, self.hostname, self.username)
         save(opath, self.__dict__)
+        self.snapshot_idx += 1
 
 
 def psutil_func_call(ftuple):
